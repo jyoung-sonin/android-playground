@@ -19,4 +19,18 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
-      - run: ./gradlew build --no-daemon
+      - name: Execute build
+        id: build
+        run: ./gradlew build --no-daemon --profile
+
+      - name: Compress build report
+        if: steps.build.outcome == 'success'
+        id: compressBuildReport
+        run: cd build/reports && zip -r ../../build-reports.zip ./* && cd -
+
+      - name: Upload build reports
+        if: steps.compressBuildReport.outcome == 'success'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-reports
+          path: build-reports.zip
